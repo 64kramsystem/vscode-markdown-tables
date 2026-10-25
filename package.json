@@ -30,7 +30,7 @@
       },
       {
         "command": "markdownTables.insertColumn",
-        "title": "Insert Column Before",
+        "title": "Insert Column",
         "category": "Markdown Tables",
         "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
       }

@@ -118,7 +118,7 @@ test('bolding table headers preserves list and blockquote container syntax', () 
   assert.equal(new MarkdownIt().render(actual), fixture('prefixed-bold.html'));
 });
 
-test('insert column before first, middle, and last cells from all three row roles', () => {
+test('insert before cells or append from all three row roles', () => {
   const input = fixture('insert.md');
   for (const { name, column, positions, cursor } of JSON.parse(fixture('insert-positions.json'))) {
     for (let i = 0; i < positions.length; i++) {
@@ -133,7 +133,7 @@ test('insert column before first, middle, and last cells from all three row role
 
 test('insert uses the cell to the right of dividing pipes and last cell at the trailing pipe', () => {
   const input = fixture('insert.md');
-  for (const [character, name] of [[0, 'first'], [4, 'middle'], [8, 'last'], [12, 'last'], [13, 'last']]) {
+  for (const [character, name] of [[0, 'first'], [4, 'middle'], [8, 'last'], [12, 'last'], [13, 'append']]) {
     assert.equal(insertColumn(input, tablesIn(input)[0], 2, character).text, fixture(`insert-${name}.md`));
   }
   assert.equal(insertColumn(input, tablesIn(input)[0], 4, 14).text, fixture('insert-middle.md'));
@@ -141,11 +141,11 @@ test('insert uses the cell to the right of dividing pipes and last cell at the t
 
 test('insert preserves optional pipes, list and quote prefixes, escapes, and short rows', () => {
   const input = fixture('insert-syntax.md');
-  for (const [name, column] of [['first', 0], ['middle', 1], ['last', 2]]) {
+  for (const [name, column] of [['first', 0], ['middle', 1], ['last', 2], ['append', 3]]) {
     let actual = input;
     for (const table of tablesIn(input).reverse()) {
       const header = actual.split('\n')[table.start];
-      actual = insertColumn(actual, table, table.start, header.indexOf('A') + column * 4).text;
+      actual = insertColumn(actual, table, table.start, column === 3 ? header.length : header.indexOf('A') + column * 4).text;
     }
     assert.equal(actual, fixture(`insert-syntax-${name}.md`));
     const parsed = tablesIn(actual);
@@ -161,5 +161,20 @@ test('insert preserves CRLF and final-newline state', () => {
   for (const suffix of ['', '-no-final-newline']) {
     const input = fixture(`crlf${suffix}.md`);
     assert.equal(insertColumn(input, tablesIn(input)[0], 0, 2).text, fixture(`insert-crlf${suffix}.md`));
+  }
+});
+
+test('three insertion rules: before opening pipe, inside either cell, and after closing pipe', () => {
+  for (const [inputName, character, expectedName, column, cursor] of [
+    ['one', 0, 'prepend', 0, 2],
+    ['one', 1, 'prepend', 0, 2],
+    ['two', 5, 'inside', 1, 6],
+    ['one', 5, 'append', 1, 6]
+  ]) {
+    const input = fixture(`insert-boundary-${inputName}.md`);
+    const result = insertColumn(input, tablesIn(input)[0], 0, character);
+    assert.equal(result.text, fixture(`insert-boundary-${expectedName}.md`));
+    assert.equal(result.column, column);
+    assert.deepEqual(result.cursor, { line: 0, character: cursor });
   }
 });

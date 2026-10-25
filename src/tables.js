@@ -126,10 +126,13 @@ function insertColumn(source, table, cursorLine, cursorCharacter) {
   const parts = source.split(/(\r?\n)/);
   const active = parts[cursorLine * 2];
   const activePrefix = rowPrefix(active);
-  const activeSpans = cellSpans(active.slice(activePrefix.length));
+  const activeContent = active.slice(activePrefix.length);
+  const activeSpans = cellSpans(activeContent);
   const relativeCharacter = cursorCharacter - activePrefix.length;
   const found = activeSpans.findIndex(([, end]) => relativeCharacter < end);
-  const column = Math.min(found === -1 ? activeSpans.length - 1 : found, table.headers.length - 1);
+  const lastEnd = activeSpans.at(-1)[1];
+  const afterTable = lastEnd < activeContent.length ? relativeCharacter > lastEnd : relativeCharacter >= lastEnd;
+  const column = afterTable ? table.headers.length : Math.min(found === -1 ? activeSpans.length - 1 : found, table.headers.length - 1);
   let cursor;
   for (const line of [table.start, table.start + 1, ...table.rows.slice(1).map(row => row.line)]) {
     const prefix = rowPrefix(parts[line * 2]);
@@ -142,13 +145,16 @@ function insertColumn(source, table, cursorLine, cursorCharacter) {
       content = content.slice(0, end) + '|  ' + content.slice(end) + (trailingPipe ? '' : '|');
       spans = cellSpans(content);
     }
-    const start = spans[column][0];
+    const append = column === table.headers.length;
+    const end = spans.at(-1)[1];
+    const hasClosingPipe = end < content.length;
+    const start = append ? end + (hasClosingPipe ? 1 : 0) : spans[column][0];
     const separator = line === table.start + 1;
-    const needsOpeningPipe = column === 0 && !content.slice(0, start).includes('|') && !separator;
-    const addition = (needsOpeningPipe ? '|' : '') + (separator ? ' --- |' : '  |');
+    const needsPipe = append ? !hasClosingPipe : column === 0 && !content.slice(0, start).includes('|') && !separator;
+    const addition = (needsPipe ? '|' : '') + (separator ? ' --- |' : '  |');
     parts[line * 2] = prefix + content.slice(0, start) + addition + content.slice(start);
     if (line === cursorLine) {
-      cursor = { line, character: prefix.length + start + (needsOpeningPipe ? 2 : 1) };
+      cursor = { line, character: prefix.length + start + (needsPipe ? 2 : 1) };
     }
   }
   return { text: parts.join(''), cursor, column };
