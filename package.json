@@ -2,7 +2,7 @@
   "name": "markdown-tables",
   "displayName": "Markdown Tables: Bold, Colors & Sort",
   "description": "Edit and sort Markdown tables, with row colors and color-name completion.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "publisher": "64kramsystem",
   "license": "MIT",
   "repository": {
