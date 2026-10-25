@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { tableAt, selectedTableRow, boldSelection, sortTable, insertColumn, completeColors, colorTables } = require('./tables');
+const { tableAt, selectedTableRow, boldSelection, sortTable, insertColumn, addRow, completeColors, colorTables } = require('./tables');
 
 function activate(context) {
   const isMarkdown = editor => editor?.document.languageId === 'markdown';
@@ -11,6 +11,20 @@ function activate(context) {
       vscode.commands.executeCommand('setContext', 'markdownTables.inTable', inside),
       vscode.commands.executeCommand('setContext', 'markdownTables.selectedTableRow', selected)
     ]);
+  }
+  async function editRow(after) {
+    const editor = vscode.window.activeTextEditor;
+    if (!isMarkdown(editor)) return;
+    const document = editor.document;
+    const source = document.getText();
+    const position = editor.selection.active;
+    const table = tableAt(source, position.line);
+    if (!table) return;
+    const inserted = addRow(source, table, position.line, after);
+    if (await editor.edit(edit => edit.insert(document.positionAt(inserted.offset), inserted.text))) {
+      const cursor = new vscode.Position(inserted.cursor.line, inserted.cursor.character);
+      editor.selection = new vscode.Selection(cursor, cursor);
+    }
   }
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider('markdown', {
@@ -91,6 +105,8 @@ function activate(context) {
         editor.selection = new vscode.Selection(cursor, cursor);
       }
     }),
+    vscode.commands.registerCommand('markdownTables.insertRow', () => editRow(false)),
+    vscode.commands.registerCommand('markdownTables.appendRow', () => editRow(true)),
     vscode.workspace.onDidChangeConfiguration(event => {
       if (event.affectsConfiguration('markdownTables.colorColumns')) {
         vscode.commands.executeCommand('markdown.preview.refresh');

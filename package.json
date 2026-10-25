@@ -2,7 +2,7 @@
   "name": "markdown-tables",
   "displayName": "Markdown Tables: Bold, Colors & Sort",
   "description": "Edit and sort Markdown tables, with row colors and color-name completion.",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "publisher": "64kramsystem",
   "license": "MIT",
   "repository": {
@@ -35,6 +35,18 @@
       {
         "command": "markdownTables.insertColumn",
         "title": "Insert Column",
+        "category": "Markdown Tables",
+        "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
+      },
+      {
+        "command": "markdownTables.insertRow",
+        "title": "Insert Row",
+        "category": "Markdown Tables",
+        "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
+      },
+      {
+        "command": "markdownTables.appendRow",
+        "title": "Append Row",
         "category": "Markdown Tables",
         "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
       }

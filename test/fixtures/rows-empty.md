@@ -1,0 +1,6 @@
+Before.
+
+| Name | Color |
+| --- | --- |
+
+After.

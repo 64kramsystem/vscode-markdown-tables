@@ -194,6 +194,21 @@ function insertColumn(source, table, cursorLine, cursorCharacter) {
   return { text: parts.join(''), cursor, column };
 }
 
+function addRow(source, table, cursorLine, after) {
+  const line = Math.max(table.start + 2, cursorLine + (after ? 1 : 0));
+  const parts = source.split(/(\r?\n)/);
+  const offset = parts.slice(0, line * 2).join('').length;
+  const prefix = rowPrefix(parts[(table.start + 1) * 2]);
+  const row = prefix + '|  '.repeat(table.headers.length) + '|';
+  const eol = source.match(/\r?\n/)[0];
+  const atUnterminatedEnd = offset === source.length && !source.endsWith('\n');
+  return {
+    offset,
+    text: atUnterminatedEnd ? eol + row : row + eol,
+    cursor: { line, character: 0 }
+  };
+}
+
 function completeColors(source, line, character, configuredColumns) {
   const table = tableAt(source, line);
   if (!table || !table.rows.slice(1).some(row => row.line === line)) return undefined;
@@ -265,4 +280,4 @@ function colorTables(md, getColumns) {
   return md;
 }
 
-module.exports = { tablesIn, tableAt, cellSpans, boldRow, selectedTableRow, boldSelection, sortTable, insertColumn, completeColors, validColor, colorTables };
+module.exports = { tablesIn, tableAt, cellSpans, boldRow, selectedTableRow, boldSelection, sortTable, insertColumn, addRow, completeColors, validColor, colorTables };
