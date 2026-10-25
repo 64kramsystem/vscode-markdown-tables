@@ -1,4 +1,4 @@
-# Markdown Tables
+# Markdown Tables: Bold, Colors & Sort
 
 Small helpers for VS Code's Markdown editor and built-in preview.
 
