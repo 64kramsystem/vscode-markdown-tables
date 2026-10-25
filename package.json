@@ -1,8 +1,8 @@
 {
   "name": "markdown-tables",
   "displayName": "Markdown Tables: Bold, Colors & Sort",
-  "description": "Insert columns, bold rows, color preview rows, and sort Markdown tables.",
-  "version": "0.2.0",
+  "description": "Edit and sort Markdown tables, with row colors and color-name completion.",
+  "version": "0.3.0",
   "publisher": "64kramsystem",
   "license": "MIT",
   "engines": {

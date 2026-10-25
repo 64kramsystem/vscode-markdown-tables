@@ -1,0 +1,18 @@
+[
+  {"name": "darkgreen", "hex": "#006400"},
+  {"name": "darkolivegreen", "hex": "#556b2f"},
+  {"name": "darkseagreen", "hex": "#8fbc8f"},
+  {"name": "forestgreen", "hex": "#228b22"},
+  {"name": "green", "hex": "#008000"},
+  {"name": "greenyellow", "hex": "#adff2f"},
+  {"name": "lawngreen", "hex": "#7cfc00"},
+  {"name": "lightgreen", "hex": "#90ee90"},
+  {"name": "lightseagreen", "hex": "#20b2aa"},
+  {"name": "limegreen", "hex": "#32cd32"},
+  {"name": "mediumseagreen", "hex": "#3cb371"},
+  {"name": "mediumspringgreen", "hex": "#00fa9a"},
+  {"name": "palegreen", "hex": "#98fb98"},
+  {"name": "seagreen", "hex": "#2e8b57"},
+  {"name": "springgreen", "hex": "#00ff7f"},
+  {"name": "yellowgreen", "hex": "#9acd32"}
+]

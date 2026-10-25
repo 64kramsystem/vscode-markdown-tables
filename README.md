@@ -7,6 +7,8 @@ Small helpers for VS Code's Markdown editor and built-in preview.
 - **Markdown Tables: Insert Column**: insert an empty column from a header, separator, or body row. On an internal pipe, the cell to the right is used; on the closing pipe, the last cell is used. Opening or closing pipes are added where necessary to retain an empty edge cell.
 - **Preview colors**: set `markdownTables.colorColumns` to comma-separated header names (default: `Color`). Names match exactly, ignoring case and surrounding spaces. Each row uses its first valid configured color from left to right. CSS color names and `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA` are accepted; empty or invalid values are ignored.
 
+In configured color cells, invoke VS Code's suggestions (Option+Esc on macOS or Ctrl+Space on Linux) to choose a CSS color name containing the text before the cursor. Empty cells offer all names; selecting one preserves cell spacing and bold formatting.
+
 The three insertion positions (`<bar>` marks the cursor; `bar` shows text typed into the new empty cell):
 
 - Before the table: `<bar>|foo|` → `|bar|foo|`.

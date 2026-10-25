@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { tableAt, selectedTableRow, boldSelection, sortTable, insertColumn, colorTables } = require('./tables');
+const { tableAt, selectedTableRow, boldSelection, sortTable, insertColumn, completeColors, colorTables } = require('./tables');
 
 function activate(context) {
   const isMarkdown = editor => editor?.document.languageId === 'markdown';
@@ -13,6 +13,23 @@ function activate(context) {
     ]);
   }
   context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider('markdown', {
+      provideCompletionItems(document, position) {
+        const configured = vscode.workspace.getConfiguration('markdownTables', document.uri).get('colorColumns', 'Color');
+        const completion = completeColors(document.getText(), position.line, position.character, configured);
+        if (!completion) return undefined;
+        const range = new vscode.Range(position.line, completion.start, position.line, completion.end);
+        const items = completion.colors.map(({ name, hex }) => {
+          const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Color);
+          item.detail = hex;
+          item.range = range;
+          item.insertText = name;
+          item.filterText = completion.query || name;
+          return item;
+        });
+        return new vscode.CompletionList(items, true);
+      }
+    }),
     vscode.window.onDidChangeActiveTextEditor(updateContext),
     vscode.window.onDidChangeTextEditorSelection(updateContext),
     vscode.workspace.onDidChangeTextDocument(updateContext),
