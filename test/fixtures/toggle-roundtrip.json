@@ -1,0 +1,6 @@
+[
+  "| alpha | beta | |",
+  " A pipe: \\| | `literal ** and __` | \\*\\*escaped\\*\\* ",
+  "> - | [label](https://example.com/**path**) | *italic* |",
+  "| 😀 | [label](https://example.com/__target__) |"
+]

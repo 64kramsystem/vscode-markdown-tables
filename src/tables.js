@@ -2,6 +2,36 @@ const MarkdownIt = require('markdown-it');
 const colorNames = require('color-name');
 const markdown = new MarkdownIt();
 
+// Track source positions before markdown-it turns emphasis marker tokens into strong tokens.
+markdown.inline.ruler.before('emphasis', 'strong_positions', (state, silent) => {
+  if (silent || state.src !== state.env.strongSource) return false;
+  const marker = state.src[state.pos];
+  if (marker !== '*' && marker !== '_') return false;
+  const count = state.scanDelims(state.pos, marker === '*').length;
+  const firstToken = state.tokens.length + (state.pending ? 1 : 0);
+  for (let offset = 0; offset < count; offset++) {
+    state.env.strongPositions.push({ token: firstToken + offset, position: state.pos + offset });
+  }
+  return false;
+});
+markdown.inline.ruler2.after('emphasis', 'strong_removals', state => {
+  if (state.src !== state.env.strongSource) return;
+  for (const { token, position } of state.env.strongPositions) {
+    const type = state.tokens[token]?.type;
+    if (type === 'strong_open') {
+      state.env.strongRemovals.add(position - 1).add(position);
+    } else if (type === 'strong_close') {
+      state.env.strongRemovals.add(position).add(position + 1);
+    }
+  }
+});
+
+function removeBold(value) {
+  const env = { strongSource: value, strongPositions: [], strongRemovals: new Set() };
+  markdown.parseInline(value, env);
+  return value.split('').filter((_, index) => !env.strongRemovals.has(index)).join('');
+}
+
 function tablesIn(source) {
   const tables = [];
   let table;
@@ -46,7 +76,7 @@ function isEntirelyBold(value) {
   for (const token of markdown.parseInline(value, {})[0].children) {
     if (token.type === 'strong_open') strongDepth++;
     else if (token.type === 'strong_close') strongDepth--;
-    else if (!token.nesting && token.content) {
+    else if (!token.nesting && token.content && (token.type !== 'text' || token.content.trim())) {
       if (!strongDepth) return false;
       hasContent = true;
     }
@@ -61,14 +91,18 @@ function rowPrefix(line) {
 function boldRow(line) {
   const prefix = rowPrefix(line);
   line = line.slice(prefix.length);
+  const spans = cellSpans(line);
+  const nonempty = spans.map(([start, end]) => line.slice(start, end).trim()).filter(Boolean);
+  const unbold = nonempty.length > 0 && nonempty.every(isEntirelyBold);
   let result = line;
-  for (const [start, end] of cellSpans(line).reverse()) {
+  for (const [start, end] of spans.reverse()) {
     const cell = line.slice(start, end);
     const content = cell.trim();
-    if (!content || isEntirelyBold(content)) continue;
+    if (!content || (!unbold && isEntirelyBold(content))) continue;
     const leading = cell.length - cell.trimStart().length;
     const trailing = cell.length - cell.trimEnd().length;
-    result = result.slice(0, start + leading) + '**' + content + '**' + result.slice(end - trailing);
+    const replacement = unbold ? removeBold(content) : '**' + content + '**';
+    result = result.slice(0, start + leading) + replacement + result.slice(end - trailing);
   }
   return prefix + result;
 }
