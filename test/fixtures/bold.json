@@ -1,0 +1,30 @@
+[
+  [
+    "| Alice | Red | #abc | red | **Already bold** |",
+    "| **Alice** | **Red** | **#abc** | **red** | **Already bold** |"
+  ],
+  [
+    "| Zoe | Blue | invalid | lavender | `a\\|b` |",
+    "| **Zoe** | **Blue** | **invalid** | **lavender** | **`a\\|b`** |"
+  ],
+  [
+    " first\t|   | __done__ | **one** and **two** ",
+    " **first**\t|   | __done__ | ****one** and **two**** "
+  ],
+  [
+    "| A pipe: \\| | `a\\|b` |",
+    "| **A pipe: \\|** | **`a\\|b`** |"
+  ],
+  [
+    "| a\\\\|b | end |",
+    "| **a\\\\|b** | **end** |"
+  ],
+  [
+    "| ***bold italic*** | __**nested**__ |",
+    "| ***bold italic*** | __**nested**__ |"
+  ],
+  [
+    "> | a | b |",
+    "> | **a** | **b** |"
+  ]
+]
