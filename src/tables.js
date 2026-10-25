@@ -160,6 +160,36 @@ function insertColumn(source, table, cursorLine, cursorCharacter) {
   return { text: parts.join(''), cursor, column };
 }
 
+function completeColors(source, line, character, configuredColumns) {
+  const table = tableAt(source, line);
+  if (!table || !table.rows.slice(1).some(row => row.line === line)) return undefined;
+  const text = source.split(/\r?\n/)[line];
+  const prefix = rowPrefix(text).length;
+  const spans = cellSpans(text.slice(prefix));
+  const column = spans.findIndex(([start, end]) => character >= prefix + start && character <= prefix + end);
+  const columns = configuredColumns.split(',').map(value => value.trim().toLowerCase());
+  if (column < 0 || !columns.includes(table.headers[column]?.trim().toLowerCase())) return undefined;
+  let [start, end] = spans[column].map(value => value + prefix);
+  const raw = text.slice(start, end);
+  if (!raw.trim()) start = end = character;
+  else {
+    start += raw.length - raw.trimStart().length;
+    end -= raw.length - raw.trimEnd().length;
+    const value = text.slice(start, end);
+    if ((value.startsWith('**') && value.endsWith('**')) || (value.startsWith('__') && value.endsWith('__'))) {
+      start += 2;
+      end -= 2;
+    }
+    if (character < start || character > end) return undefined;
+  }
+  const query = text.slice(start, character).toLowerCase();
+  const colors = Object.keys(colorNames).filter(name => name.includes(query)).sort().map(name => ({
+    name,
+    hex: '#' + colorNames[name].map(value => value.toString(16).padStart(2, '0')).join('')
+  }));
+  return { start, end, query, colors };
+}
+
 function validColor(value) {
   const color = value.trim().toLowerCase();
   return Object.hasOwn(colorNames, color) || /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(color) ? color : undefined;
@@ -194,4 +224,4 @@ function colorTables(md, getColumns) {
   return md;
 }
 
-module.exports = { tablesIn, tableAt, cellSpans, boldRow, selectedTableRow, boldSelection, sortTable, insertColumn, validColor, colorTables };
+module.exports = { tablesIn, tableAt, cellSpans, boldRow, selectedTableRow, boldSelection, sortTable, insertColumn, completeColors, validColor, colorTables };

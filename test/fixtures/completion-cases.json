@@ -1,0 +1,9 @@
+[
+  {"line":4,"character":15,"start":10,"end":15,"query":"green","replacement":"| query | palegreen | coral | green |"},
+  {"line":5,"character":18,"start":14,"end":18,"query":"reen","replacement":"| substring | palegreen | blue | text |"},
+  {"line":7,"character":15,"start":11,"end":15,"query":"reen","replacement":"| bold | **palegreen** | red | text |"},
+  {"line":8,"character":22,"start":17,"end":22,"query":"green","replacement":"| underlined | __palegreen__ | gold | text |"},
+  {"line":11,"character":24,"start":20,"end":24,"query":"reen","replacement":"| escaped \\| pipe | palegreen | purple | text |"},
+  {"line":15,"character":19,"start":15,"end":19,"query":"reen","replacement":">   | nested | palegreen |"},
+  {"line":19,"character":12,"start":8,"end":12,"query":"reen","replacement":"plain | palegreen"}
+]
