@@ -1,0 +1,11 @@
+[
+  ["| **alpha** | __beta__ |   |", "| alpha | beta |   |"],
+  ["| ***italic*** | *__also italic__* | __**nested**__ |", "| *italic* | *also italic* | nested |"],
+  ["| **`literal ** and __`** | **\\*\\*escaped\\*\\*** |", "| `literal ** and __` | \\*\\*escaped\\*\\* |"],
+  ["| **[**label**](https://example.com/__target__)** | **end** |", "| [label](https://example.com/__target__) | end |"],
+  ["| [**label**](https://example.com/**path**) | **![alt](image**name**.png)** |", "| [label](https://example.com/**path**) | ![alt](image**name**.png) |"],
+  ["| **one** **two** | **😀** |", "| one two | 😀 |"],
+  ["> - | **alpha** | __beta__ |", "> - | alpha | beta |"],
+  ["| **alpha** | beta |   |", "| **alpha** | **beta** |   |"],
+  ["|   |\t|", "|   |\t|"]
+]

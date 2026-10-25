@@ -178,3 +178,44 @@ test('three insertion rules: before opening pipe, inside either cell, and after 
     assert.deepEqual(result.cursor, { line: 0, character: cursor });
   }
 });
+
+test('row toggle removes real strong markers while preserving nested formatting and literals', () => {
+  for (const [input, expected] of JSON.parse(fixture('toggle-bold.json'))) {
+    assert.equal(boldRow(input), expected);
+  }
+});
+
+test('plain rows round-trip through bold and unbold and toggle on a third time', () => {
+  for (const input of JSON.parse(fixture('toggle-roundtrip.json'))) {
+    const once = boldRow(input);
+    assert.notEqual(once, input);
+    assert.equal(boldRow(once), input);
+    assert.equal(boldRow(boldRow(once)), once);
+  }
+});
+
+test('all-bold table rows and header unbold without changing preview colors', () => {
+  const input = fixture('bold-table.md');
+  const lines = input.split('\n');
+  for (const table of tablesIn(input)) {
+    for (const row of table.rows) lines[row.line] = boldRow(lines[row.line]);
+  }
+  const actual = lines.join('\n');
+  assert.equal(actual, fixture('unbold-table.md'));
+  assert.equal(colorTables(new MarkdownIt(), () => ' cOlOuR , COLOR ').render(actual), fixture('unbold-colored.html'));
+});
+
+test('selected CRLF rows retain their line endings through two toggles', () => {
+  for (const suffix of ['', '-no-final-newline']) {
+    const input = fixture(`crlf${suffix}.md`);
+    for (const row of tablesIn(input)[0].rows.slice(1)) {
+      const start = input.split('\n').slice(0, row.line).join('\n').length + 1;
+      const newline = input.indexOf('\n', start);
+      const end = newline === -1 ? input.length : newline + 1;
+      const once = boldSelection(input, start, end);
+      const changed = input.slice(0, start) + once + input.slice(end);
+      const twice = boldSelection(changed, start, start + once.length);
+      assert.equal(input.slice(0, start) + twice + input.slice(end), input);
+    }
+  }
+});

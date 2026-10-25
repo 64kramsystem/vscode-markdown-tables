@@ -21,7 +21,7 @@
   ],
   [
     "| ***bold italic*** | __**nested**__ |",
-    "| ***bold italic*** | __**nested**__ |"
+    "| *bold italic* | nested |"
   ],
   [
     "> | a | b |",

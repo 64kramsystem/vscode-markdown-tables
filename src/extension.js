@@ -37,12 +37,14 @@ function activate(context) {
       const editor = vscode.window.activeTextEditor;
       if (!isMarkdown(editor) || editor.selections.length !== 1) return;
       const source = editor.document.getText();
-      const selections = editor.selections;
-      await editor.edit(edit => {
-        for (const selection of selections) {
-          edit.replace(selection, boldSelection(source, editor.document.offsetAt(selection.start), editor.document.offsetAt(selection.end)));
-        }
-      });
+      const selection = editor.selection;
+      const start = editor.document.offsetAt(selection.start);
+      const end = editor.document.offsetAt(selection.end);
+      const replacement = boldSelection(source, start, end);
+      if (await editor.edit(edit => edit.replace(selection, replacement))) {
+        const updatedEnd = editor.document.positionAt(start + replacement.length);
+        editor.selection = new vscode.Selection(selection.start, updatedEnd);
+      }
     }),
     vscode.commands.registerCommand('markdownTables.sort', async () => {
       const editor = vscode.window.activeTextEditor;

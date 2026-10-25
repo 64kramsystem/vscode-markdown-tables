@@ -19,7 +19,7 @@
     "commands": [
       {
         "command": "markdownTables.bold",
-        "title": "Bold",
+        "title": "Toggle Bold",
         "category": "Markdown Tables"
       },
       {
