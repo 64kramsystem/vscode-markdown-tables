@@ -219,3 +219,16 @@ test('selected CRLF rows retain their line endings through two toggles', () => {
     }
   }
 });
+
+test('preview hides every configured color column while preserving colors and other cells', () => {
+  const input = fixture('preview-columns.md');
+  const md = colorTables(new MarkdownIt(), () => ' COLOR , cOlOuR ');
+  assert.equal(md.render(input), fixture('preview-columns.html'));
+  const onlyColor = colorTables(new MarkdownIt(), () => ' Color ');
+  const headers = onlyColor.parse(input, {}).filter(token => token.type === 'th_open');
+  assert.deepEqual(headers.map(token => token.attrGet('style')), [
+    'text-align:left', 'text-align:center; display: none', 'text-align:right', null
+  ]);
+  const none = colorTables(new MarkdownIt(), () => 'Missing');
+  assert.equal(none.render(input), new MarkdownIt().render(input));
+});

@@ -236,11 +236,13 @@ function colorTables(md, getColumns) {
     let row;
     let inHeader = false;
     let cells;
+    let cellTokens;
     for (const token of state.tokens) {
       if (token.type === 'table_open') headers = [];
       else if (token.type === 'thead_open') inHeader = true;
       else if (token.type === 'thead_close') inHeader = false;
-      else if (token.type === 'tr_open') { row = token; cells = []; }
+      else if (token.type === 'tr_open') { row = token; cells = []; cellTokens = []; }
+      else if (row && (token.type === 'th_open' || token.type === 'td_open')) cellTokens.push(token);
       else if (row && token.type === 'inline') cells.push(token.content);
       else if (token.type === 'tr_close') {
         if (inHeader) headers = cells.map(value => inlineText(value).trim().toLowerCase());
@@ -251,6 +253,11 @@ function colorTables(md, getColumns) {
             if (color) { row.attrSet('style', `background-color: ${color}`); break; }
           }
         }
+        cellTokens.forEach((cell, index) => {
+          if (configured.includes(headers[index])) {
+            cell.attrSet('style', [cell.attrGet('style'), 'display: none'].filter(Boolean).join('; '));
+          }
+        });
         row = undefined;
       } else if (token.type === 'table_close') headers = undefined;
     }
