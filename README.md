@@ -4,7 +4,14 @@ Small helpers for VS Code's Markdown editor and built-in preview.
 
 - **Cmd+B** (macOS) / **Ctrl+B**: select one complete table row to bold each nonempty cell, preserving pipes and spacing. Already-bold cells stay unchanged; separator rows are ignored. For other selections, your existing shortcut remains in effect.
 - **Markdown Tables: Sort by column[s]**: place the cursor in a table, run the command, and enter comma-separated header prefixes, such as `team, name`. Prefixes ignore case and surrounding spaces and must each identify one column; an exact header match takes precedence over longer prefix matches. Body rows sort ascending, case-insensitively, by the entered precedence; ties retain their order. Markdown formatting, the header, and the separator stay intact.
+- **Markdown Tables: Insert Column**: insert an empty column from a header, separator, or body row. On an internal pipe, the cell to the right is used; on the closing pipe, the last cell is used. Opening or closing pipes are added where necessary to retain an empty edge cell.
 - **Preview colors**: set `markdownTables.colorColumns` to comma-separated header names (default: `Color`). Names match exactly, ignoring case and surrounding spaces. Each row uses its first valid configured color from left to right. CSS color names and `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA` are accepted; empty or invalid values are ignored.
+
+The three insertion positions (`<bar>` marks the cursor; `bar` shows text typed into the new empty cell):
+
+- Before the table: `<bar>|foo|` → `|bar|foo|`.
+- Inside a cell: `|<bar>foo|` → `|bar|foo|`; `|baz|<bar>foo|` → `|baz|bar|foo|`.
+- After the table: `|foo|<bar>` → `|foo|bar|`.
 
 Use Markdown table syntax, including escaped pipes (`\|`) inside cells and code spans. Sorting compares trimmed cell Markdown as text. Preview colors are preview-only; the file is unchanged.
 

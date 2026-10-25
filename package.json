@@ -1,8 +1,8 @@
 {
   "name": "markdown-tables",
   "displayName": "Markdown Tables: Bold, Colors & Sort",
-  "description": "Bold table rows, color preview rows, and sort Markdown tables by columns.",
-  "version": "0.1.0",
+  "description": "Insert columns, bold rows, color preview rows, and sort Markdown tables.",
+  "version": "0.2.0",
   "publisher": "64kramsystem",
   "license": "MIT",
   "engines": {
@@ -27,6 +27,12 @@
         "title": "Sort by column[s]",
         "category": "Markdown Tables",
         "enablement": "editorLangId == markdown && markdownTables.inTable"
+      },
+      {
+        "command": "markdownTables.insertColumn",
+        "title": "Insert Column",
+        "category": "Markdown Tables",
+        "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
       }
     ],
     "keybindings": [
