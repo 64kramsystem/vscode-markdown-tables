@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const MarkdownIt = require('markdown-it');
-const { tablesIn, tableAt, selectedTableRow, boldRow, boldSelection, sortTable, validColor, colorTables } = require('../src/tables');
+const { tablesIn, tableAt, selectedTableRow, boldRow, boldSelection, sortTable, insertColumn, validColor, colorTables } = require('../src/tables');
 const fixture = name => readFileSync(join(__dirname, 'fixtures', name), 'utf8');
 const source = fixture('table.md');
 
@@ -116,4 +116,50 @@ test('bolding table headers preserves list and blockquote container syntax', () 
   }
   assert.equal(actual, fixture('prefixed-bold.md'));
   assert.equal(new MarkdownIt().render(actual), fixture('prefixed-bold.html'));
+});
+
+test('insert column before first, middle, and last cells from all three row roles', () => {
+  const input = fixture('insert.md');
+  for (const { name, column, positions, cursor } of JSON.parse(fixture('insert-positions.json'))) {
+    for (let i = 0; i < positions.length; i++) {
+      const result = insertColumn(input, tablesIn(input)[0], ...positions[i]);
+      assert.equal(result.text, fixture(`insert-${name}.md`));
+      assert.equal(result.column, column);
+      assert.deepEqual(result.cursor, { line: cursor[i][0], character: cursor[i][1] });
+      assert.equal(new MarkdownIt().render(result.text), fixture(`insert-${name}.html`));
+    }
+  }
+});
+
+test('insert uses the cell to the right of dividing pipes and last cell at the trailing pipe', () => {
+  const input = fixture('insert.md');
+  for (const [character, name] of [[0, 'first'], [4, 'middle'], [8, 'last'], [12, 'last'], [13, 'last']]) {
+    assert.equal(insertColumn(input, tablesIn(input)[0], 2, character).text, fixture(`insert-${name}.md`));
+  }
+  assert.equal(insertColumn(input, tablesIn(input)[0], 4, 14).text, fixture('insert-middle.md'));
+});
+
+test('insert preserves optional pipes, list and quote prefixes, escapes, and short rows', () => {
+  const input = fixture('insert-syntax.md');
+  for (const [name, column] of [['first', 0], ['middle', 1], ['last', 2]]) {
+    let actual = input;
+    for (const table of tablesIn(input).reverse()) {
+      const header = actual.split('\n')[table.start];
+      actual = insertColumn(actual, table, table.start, header.indexOf('A') + column * 4).text;
+    }
+    assert.equal(actual, fixture(`insert-syntax-${name}.md`));
+    const parsed = tablesIn(actual);
+    assert.equal(parsed.length, 4);
+    for (const table of parsed) {
+      for (const row of table.rows) assert.equal(row.cells.length, 4);
+      assert.equal(table.headers[column], '');
+    }
+  }
+});
+
+test('insert preserves CRLF and final-newline state', () => {
+  for (const suffix of ['', '-no-final-newline']) {
+    const input = fixture(`crlf${suffix}.md`);
+    assert.equal(insertColumn(input, tablesIn(input)[0], 0, 2).text, fixture(`insert-crlf${suffix}.md`));
+  }
 });

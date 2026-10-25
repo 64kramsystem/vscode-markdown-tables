@@ -54,8 +54,12 @@ function isEntirelyBold(value) {
   return hasContent;
 }
 
+function rowPrefix(line) {
+  return line.match(/^(?:[ \t]*(?:>[ \t]?|(?:[-+*]|\d{1,9}[.)])[ \t]+(?=[|>])))*[ \t]*/)?.[0] || '';
+}
+
 function boldRow(line) {
-  const prefix = line.match(/^(?:[ \t]*(?:>[ \t]?|(?:[-+*]|\d{1,9}[.)])[ \t]+))+/)?.[0] || '';
+  const prefix = rowPrefix(line);
   line = line.slice(prefix.length);
   let result = line;
   for (const [start, end] of cellSpans(line).reverse()) {
@@ -118,6 +122,38 @@ function sortTable(source, table, input) {
   return parts.join('');
 }
 
+function insertColumn(source, table, cursorLine, cursorCharacter) {
+  const parts = source.split(/(\r?\n)/);
+  const active = parts[cursorLine * 2];
+  const activePrefix = rowPrefix(active);
+  const activeSpans = cellSpans(active.slice(activePrefix.length));
+  const relativeCharacter = cursorCharacter - activePrefix.length;
+  const found = activeSpans.findIndex(([, end]) => relativeCharacter < end);
+  const column = Math.min(found === -1 ? activeSpans.length - 1 : found, table.headers.length - 1);
+  let cursor;
+  for (const line of [table.start, table.start + 1, ...table.rows.slice(1).map(row => row.line)]) {
+    const prefix = rowPrefix(parts[line * 2]);
+    let content = parts[line * 2].slice(prefix.length);
+    let spans = cellSpans(content);
+    // Markdown permits short body rows, implicitly filling missing cells with blanks.
+    while (spans.length < table.headers.length) {
+      const end = spans.at(-1)[1];
+      const trailingPipe = end < content.length;
+      content = content.slice(0, end) + '|  ' + content.slice(end) + (trailingPipe ? '' : '|');
+      spans = cellSpans(content);
+    }
+    const start = spans[column][0];
+    const separator = line === table.start + 1;
+    const needsOpeningPipe = column === 0 && !content.slice(0, start).includes('|') && !separator;
+    const addition = (needsOpeningPipe ? '|' : '') + (separator ? ' --- |' : '  |');
+    parts[line * 2] = prefix + content.slice(0, start) + addition + content.slice(start);
+    if (line === cursorLine) {
+      cursor = { line, character: prefix.length + start + (needsOpeningPipe ? 2 : 1) };
+    }
+  }
+  return { text: parts.join(''), cursor, column };
+}
+
 function validColor(value) {
   const color = value.trim().toLowerCase();
   return Object.hasOwn(colorNames, color) || /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(color) ? color : undefined;
@@ -152,4 +188,4 @@ function colorTables(md, getColumns) {
   return md;
 }
 
-module.exports = { tablesIn, tableAt, cellSpans, boldRow, selectedTableRow, boldSelection, sortTable, validColor, colorTables };
+module.exports = { tablesIn, tableAt, cellSpans, boldRow, selectedTableRow, boldSelection, sortTable, insertColumn, validColor, colorTables };

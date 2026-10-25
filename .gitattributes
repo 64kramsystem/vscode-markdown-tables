@@ -1,1 +1,2 @@
 test/fixtures/crlf*.md -text
+test/fixtures/insert-crlf*.md -text

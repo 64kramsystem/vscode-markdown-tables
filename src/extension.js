@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { tableAt, selectedTableRow, boldSelection, sortTable, colorTables } = require('./tables');
+const { tableAt, selectedTableRow, boldSelection, sortTable, insertColumn, colorTables } = require('./tables');
 
 function activate(context) {
   const isMarkdown = editor => editor?.document.languageId === 'markdown';
@@ -54,6 +54,23 @@ function activate(context) {
       const range = new vscode.Range(firstLine, 0, lastLine, document.lineAt(lastLine).text.length);
       const replacement = sorted.split(/\r?\n/).slice(firstLine, lastLine + 1).join(document.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n');
       await editor.edit(edit => edit.replace(range, replacement));
+    }),
+    vscode.commands.registerCommand('markdownTables.insertColumn', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!isMarkdown(editor)) return;
+      const document = editor.document;
+      const source = document.getText();
+      const position = editor.selection.active;
+      const table = tableAt(source, position.line);
+      if (!table) return;
+      const inserted = insertColumn(source, table, position.line, position.character);
+      const lastLine = table.end - 1;
+      const range = new vscode.Range(table.start, 0, lastLine, document.lineAt(lastLine).text.length);
+      const replacement = inserted.text.split(/\r?\n/).slice(table.start, table.end).join(document.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n');
+      if (await editor.edit(edit => edit.replace(range, replacement))) {
+        const cursor = new vscode.Position(inserted.cursor.line, inserted.cursor.character);
+        editor.selection = new vscode.Selection(cursor, cursor);
+      }
     }),
     vscode.workspace.onDidChangeConfiguration(event => {
       if (event.affectsConfiguration('markdownTables.colorColumns')) {
