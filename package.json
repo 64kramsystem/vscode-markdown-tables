@@ -37,6 +37,18 @@
         "title": "Insert Column",
         "category": "Markdown Tables",
         "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
+      },
+      {
+        "command": "markdownTables.insertRow",
+        "title": "Insert Row",
+        "category": "Markdown Tables",
+        "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
+      },
+      {
+        "command": "markdownTables.appendRow",
+        "title": "Append Row",
+        "category": "Markdown Tables",
+        "enablement": "editorLangId == markdown && !editorReadonly && markdownTables.inTable"
       }
     ],
     "keybindings": [
