@@ -3,7 +3,7 @@
   "displayName": "Markdown Tables",
   "description": "Bold table rows, color preview rows, and sort Markdown tables by columns.",
   "version": "0.1.0",
-  "publisher": "saverio",
+  "publisher": "64kramsystem",
   "license": "MIT",
   "engines": {
     "vscode": "^1.143.0"
