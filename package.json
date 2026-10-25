@@ -1,0 +1,63 @@
+{
+  "name": "markdown-tables",
+  "displayName": "Markdown Tables",
+  "description": "Bold table rows, color preview rows, and sort Markdown tables by columns.",
+  "version": "0.1.0",
+  "publisher": "saverio",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.143.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "markdownTables.bold",
+        "title": "Bold",
+        "category": "Markdown Tables"
+      },
+      {
+        "command": "markdownTables.sort",
+        "title": "Sort by column[s]",
+        "category": "Markdown Tables",
+        "enablement": "editorLangId == markdown && markdownTables.inTable"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "markdownTables.bold",
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "when": "editorTextFocus && !editorReadonly && editorLangId == markdown && markdownTables.selectedTableRow"
+      }
+    ],
+    "configuration": {
+      "title": "Markdown Tables",
+      "properties": {
+        "markdownTables.colorColumns": {
+          "type": "string",
+          "default": "Color",
+          "description": "Comma-separated table header names containing row background colors. Matches ignore case and surrounding spaces. The first valid color from left to right wins."
+        }
+      }
+    },
+    "markdown.markdownItPlugins": true
+  },
+  "scripts": {
+    "test": "node --test",
+    "package": "vsce package --allow-missing-repository"
+  },
+  "dependencies": {
+    "color-name": "^1.1.4",
+    "markdown-it": "^15.0.3"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^4.0.0"
+  }
+}

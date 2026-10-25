@@ -1,0 +1,4 @@
+{
+  "valid": [" RED ", "rebeccapurple", "#AbC", "#1234", "#abcdef", "#12345678"],
+  "invalid": ["", " ", "invalid", "#12", "#12345", "red; color: blue", "var(--red)", "rgb(1,2,3)", "url(https://example.com)", "inherit", "__proto__"]
+}
