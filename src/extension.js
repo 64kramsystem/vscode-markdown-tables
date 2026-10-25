@@ -52,7 +52,7 @@ function activate(context) {
       const firstLine = table.rows[1].line;
       const lastLine = table.rows.at(-1).line;
       const range = new vscode.Range(firstLine, 0, lastLine, document.lineAt(lastLine).text.length);
-      const replacement = sorted.split('\n').slice(firstLine, lastLine + 1).join('\n');
+      const replacement = sorted.split(/\r?\n/).slice(firstLine, lastLine + 1).join(document.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n');
       await editor.edit(edit => edit.replace(range, replacement));
     }),
     vscode.workspace.onDidChangeConfiguration(event => {

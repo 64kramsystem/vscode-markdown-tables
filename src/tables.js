@@ -55,7 +55,7 @@ function isEntirelyBold(value) {
 }
 
 function boldRow(line) {
-  const prefix = line.match(/^(?:[ \t]*>[ \t]?)+/)?.[0] || '';
+  const prefix = line.match(/^(?:[ \t]*(?:>[ \t]?|(?:[-+*]|\d{1,9}[.)])[ \t]+))+/)?.[0] || '';
   line = line.slice(prefix.length);
   let result = line;
   for (const [start, end] of cellSpans(line).reverse()) {
@@ -98,7 +98,8 @@ function sortTable(source, table, input) {
   const prefixes = input.split(',').map(prefix => prefix.trim().toLowerCase());
   const columns = prefixes.map(prefix => {
     if (!prefix) throw new Error('Enter a nonempty column header prefix.');
-    const matches = headers.flatMap((header, index) => header.startsWith(prefix) ? [index] : []);
+    const exact = headers.flatMap((header, index) => header === prefix ? [index] : []);
+    const matches = exact.length ? exact : headers.flatMap((header, index) => header.startsWith(prefix) ? [index] : []);
     if (!matches.length) throw new Error(`No column matches “${prefix}”.`);
     if (matches.length > 1) throw new Error(`More than one column matches “${prefix}”.`);
     return matches[0];
@@ -111,10 +112,10 @@ function sortTable(source, table, input) {
     }
     return 0;
   });
-  const lines = source.split('\n');
-  const original = lines.slice();
-  table.rows.slice(1).forEach((row, index) => { lines[row.line] = original[rows[index].line]; });
-  return lines.join('\n');
+  const parts = source.split(/(\r?\n)/);
+  const original = parts.slice();
+  table.rows.slice(1).forEach((row, index) => { parts[row.line * 2] = original[rows[index].line * 2]; });
+  return parts.join('');
 }
 
 function validColor(value) {

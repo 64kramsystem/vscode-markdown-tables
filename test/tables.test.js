@@ -90,3 +90,30 @@ test('bolded header and color cells keep their preview colors', () => {
   const md = colorTables(new MarkdownIt(), () => ' cOlOuR , COLOR ');
   assert.equal(md.render(fixture('bold-table.md')), fixture('bold-colored.html'));
 });
+
+test('sorting preserves CRLF separators and presence or absence of a final newline', () => {
+  for (const suffix of ['', '-no-final-newline']) {
+    const input = fixture(`crlf${suffix}.md`);
+    assert.equal(sortTable(input, tablesIn(input)[0], 'name, id'), fixture(`crlf-sorted${suffix}.md`));
+  }
+});
+
+test('exact headers take precedence over longer headers sharing a prefix', () => {
+  const input = fixture('exact-headers.md');
+  assert.equal(sortTable(input, tablesIn(input)[0], ' NAME , Id '), fixture('exact-headers-sorted.md'));
+  assert.throws(() => sortTable(input, tablesIn(input)[0], 'na'), /More than one/);
+});
+
+test('bolding table headers preserves list and blockquote container syntax', () => {
+  const input = fixture('prefixed.md');
+  let actual = input;
+  const tables = tablesIn(input);
+  assert.equal(tables.length, 3);
+  for (const table of tables.reverse()) {
+    const start = input.split('\n').slice(0, table.start).join('\n').length + (table.start ? 1 : 0);
+    const end = input.indexOf('\n', start);
+    actual = actual.slice(0, start) + boldSelection(input, start, end) + actual.slice(end);
+  }
+  assert.equal(actual, fixture('prefixed-bold.md'));
+  assert.equal(new MarkdownIt().render(actual), fixture('prefixed-bold.html'));
+});
