@@ -34,7 +34,7 @@
         "command": "markdownTables.bold",
         "key": "ctrl+b",
         "mac": "cmd+b",
-        "when": "editorTextFocus && editorLangId == markdown && markdownTables.selectedTableRow"
+        "when": "editorTextFocus && !editorReadonly && editorLangId == markdown && markdownTables.selectedTableRow"
       }
     ],
     "configuration": {
