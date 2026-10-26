@@ -240,6 +240,8 @@ test('colored rows use native automatic contrast and leave uncolored rows unchan
   const rows = md.parse(source, {}).filter(token => token.type === 'tr_open');
   assert.deepEqual(rows.map(token => token.attrGet('class')), [
     null, 'markdown-tables-colored', 'markdown-tables-colored', 'markdown-tables-colored',
-    'markdown-tables-colored', 'markdown-tables-colored', 'markdown-tables-colored', null, null
+    'markdown-tables-colored', 'markdown-tables-colored', 'markdown-tables-colored',
+    'markdown-tables-colored', 'markdown-tables-colored', 'markdown-tables-colored',
+    'markdown-tables-colored', 'markdown-tables-colored', null, null
   ]);
 });
