@@ -88,12 +88,10 @@ function rowPrefix(line) {
   return line.match(/^(?:[ \t]*(?:>[ \t]?|(?:[-+*]|\d{1,9}[.)])[ \t]+(?=[|>])))*[ \t]*/)?.[0] || '';
 }
 
-function boldRow(line) {
+function transformRow(line, unbold) {
   const prefix = rowPrefix(line);
   line = line.slice(prefix.length);
   const spans = cellSpans(line);
-  const nonempty = spans.map(([start, end]) => line.slice(start, end).trim()).filter(Boolean);
-  const unbold = nonempty.length > 0 && nonempty.every(isEntirelyBold);
   let result = line;
   for (const [start, end] of spans.reverse()) {
     const cell = line.slice(start, end);
@@ -107,23 +105,38 @@ function boldRow(line) {
   return prefix + result;
 }
 
+function nonemptyCells(line) {
+  const content = line.slice(rowPrefix(line).length);
+  return cellSpans(content).map(([start, end]) => content.slice(start, end).trim()).filter(Boolean);
+}
+
+function boldRow(line) {
+  const cells = nonemptyCells(line);
+  return transformRow(line, cells.length > 0 && cells.every(isEntirelyBold));
+}
+
 function selectedTableRow(source, start, end) {
-  const prefix = source.slice(0, start);
-  const line = (prefix.match(/\n/g) || []).length;
-  const lineStart = prefix.lastIndexOf('\n') + 1;
-  const newline = source.indexOf('\n', lineStart);
-  const lineEnd = newline === -1 ? source.length : newline;
-  const contentEnd = source[lineEnd - 1] === '\r' ? lineEnd - 1 : lineEnd;
-  if (start !== lineStart || ![contentEnd, lineEnd, lineEnd + 1].includes(end)) return undefined;
-  const table = tableAt(source, line);
-  if (!table || line === table.start + 1) return undefined;
-  return { line, contentEnd };
+  if (end <= start || (start > 0 && source[start - 1] !== '\n')) return undefined;
+  const endsAtBoundary = end === source.length || source[end] === '\n' ||
+    (source[end] === '\r' && source[end + 1] === '\n') || source[end - 1] === '\n';
+  if (!endsAtBoundary) return undefined;
+  const firstLine = (source.slice(0, start).match(/\n/g) || []).length;
+  const lastLine = (source.slice(0, end).match(/\n/g) || []).length - (source[end - 1] === '\n' ? 1 : 0);
+  const table = tableAt(source, firstLine);
+  if (!table || lastLine >= table.end || (firstLine === table.start + 1 && lastLine === firstLine)) return undefined;
+  return { firstLine, lastLine, separatorLine: table.start + 1 };
 }
 
 function boldSelection(source, start, end) {
-  const row = selectedTableRow(source, start, end);
-  if (!row) return source.slice(start, end);
-  return boldRow(source.slice(start, row.contentEnd)) + source.slice(row.contentEnd, end);
+  const rows = selectedTableRow(source, start, end);
+  if (!rows) return source.slice(start, end);
+  const parts = source.slice(start, end).split(/(\r?\n)/);
+  const selected = parts.flatMap((text, index) => index % 2 === 0 && rows.firstLine + index / 2 !== rows.separatorLine ? nonemptyCells(text) : []);
+  const unbold = selected.length > 0 && selected.every(isEntirelyBold);
+  for (let index = 0; index < parts.length; index += 2) {
+    if (rows.firstLine + index / 2 !== rows.separatorLine) parts[index] = transformRow(parts[index], unbold);
+  }
+  return parts.join('');
 }
 
 function inlineText(source) {
