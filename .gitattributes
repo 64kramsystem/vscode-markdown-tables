@@ -1,3 +1,4 @@
 test/fixtures/crlf*.md -text
 test/fixtures/insert-crlf*.md -text
 test/fixtures/rows-crlf*.md -text
+test/fixtures/multi-bold-crlf*.md -text
