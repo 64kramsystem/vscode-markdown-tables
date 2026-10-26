@@ -81,7 +81,7 @@ test('actual Markdown render colors rows by leftmost valid configured column', (
   const md = colorTables(new MarkdownIt(), () => ' cOlOuR , COLOR ');
   assert.equal(md.render(source), fixture('colored.html'));
   const defaultMd = colorTables(new MarkdownIt(), () => 'Color');
-  assert.deepEqual([...defaultMd.render(source).matchAll(/<tr style="background-color: ([^"]+)"/g)].map(match => match[1]), ['#abc', 'rebeccapurple']);
+  assert.deepEqual([...defaultMd.render(source).matchAll(/background-color: ([^;]+);/g)].map(match => match[1]), ['#abc', 'rebeccapurple']);
   const noColumns = colorTables(new MarkdownIt(), () => '');
   assert.equal(noColumns.render(source), new MarkdownIt().render(source));
 });
@@ -231,4 +231,15 @@ test('preview hides every configured color column while preserving colors and ot
   ]);
   const none = colorTables(new MarkdownIt(), () => 'Missing');
   assert.equal(none.render(input), new MarkdownIt().render(input));
+});
+
+test('colored rows use native automatic contrast and leave uncolored rows unchanged', () => {
+  const source = fixture('contrast.md');
+  const md = colorTables(new MarkdownIt(), () => 'Color');
+  assert.equal(md.render(source), fixture('contrast.html'));
+  const rows = md.parse(source, {}).filter(token => token.type === 'tr_open');
+  assert.deepEqual(rows.map(token => token.attrGet('class')), [
+    null, 'markdown-tables-colored', 'markdown-tables-colored', 'markdown-tables-colored',
+    'markdown-tables-colored', 'markdown-tables-colored', 'markdown-tables-colored', null, null
+  ]);
 });

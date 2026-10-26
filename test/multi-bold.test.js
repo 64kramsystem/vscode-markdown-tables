@@ -84,6 +84,6 @@ test('color values and table structure survive selection-wide toggling', () => {
   for (const name of ['multi-bold.md', 'multi-bold-on.md']) {
     const md = colorTables(new MarkdownIt(), () => 'Color');
     const rows = md.parse(fixture(name), {}).filter(token => token.type === 'tr_open');
-    assert.deepEqual(rows.map(token => token.attrGet('style')), [null, 'background-color: red', 'background-color: blue', null, null, null]);
+    assert.deepEqual(rows.map(token => token.attrGet('style')), [null, 'background-color: red; color: contrast-color(red)', 'background-color: blue; color: contrast-color(blue)', null, null, null]);
   }
 });

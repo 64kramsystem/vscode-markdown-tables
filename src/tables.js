@@ -278,7 +278,11 @@ function colorTables(md, getColumns) {
           for (let i = 0; i < headers.length; i++) {
             if (!configured.includes(headers[i])) continue;
             const color = validColor(inlineText(cells[i] || ''));
-            if (color) { row.attrSet('style', `background-color: ${color}`); break; }
+            if (color) {
+              row.attrSet('style', `background-color: ${color}; color: contrast-color(${color})`);
+              row.attrJoin('class', 'markdown-tables-colored');
+              break;
+            }
           }
         }
         cellTokens.forEach((cell, index) => {
