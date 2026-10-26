@@ -257,6 +257,14 @@ function validColor(value) {
   return Object.hasOwn(colorNames, color) || /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(color) ? color : undefined;
 }
 
+function contrastBackground(color) {
+  if (!color.startsWith('#') || ![5, 9].includes(color.length)) return color;
+  const opaque = color.slice(0, color.length === 5 ? 4 : 7);
+  const alpha = color.length === 5 ? color.at(-1).repeat(2) : color.slice(-2);
+  const percent = parseInt(alpha, 16) / 255 * 100;
+  return `color-mix(in srgb, ${opaque} ${percent}%, var(--vscode-editor-background))`;
+}
+
 function colorTables(md, getColumns) {
   md.core.ruler.after('inline', 'markdown_tables_colors', state => {
     const configured = getColumns(state.env).split(',').map(value => value.trim().toLowerCase()).filter(Boolean);
@@ -278,7 +286,11 @@ function colorTables(md, getColumns) {
           for (let i = 0; i < headers.length; i++) {
             if (!configured.includes(headers[i])) continue;
             const color = validColor(inlineText(cells[i] || ''));
-            if (color) { row.attrSet('style', `background-color: ${color}`); break; }
+            if (color) {
+              row.attrSet('style', `background-color: ${color}; color: contrast-color(${contrastBackground(color)})`);
+              row.attrJoin('class', 'markdown-tables-colored');
+              break;
+            }
           }
         }
         cellTokens.forEach((cell, index) => {
