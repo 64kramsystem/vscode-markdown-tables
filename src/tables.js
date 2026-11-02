@@ -147,19 +147,21 @@ function inlineText(source) {
 function sortTable(source, table, input) {
   const headers = table.headers.map(header => header.trim().toLowerCase());
   const prefixes = input.split(',').map(prefix => prefix.trim().toLowerCase());
-  const columns = prefixes.map(prefix => {
+  const columns = prefixes.map(value => {
+    const direction = value.endsWith('-') ? -1 : 1;
+    const prefix = direction === -1 ? value.slice(0, -1).trim() : value;
     if (!prefix) throw new Error('Enter a nonempty column header prefix.');
     const exact = headers.flatMap((header, index) => header === prefix ? [index] : []);
     const matches = exact.length ? exact : headers.flatMap((header, index) => header.startsWith(prefix) ? [index] : []);
     if (!matches.length) throw new Error(`No column matches “${prefix}”.`);
     if (matches.length > 1) throw new Error(`More than one column matches “${prefix}”.`);
-    return matches[0];
+    return { index: matches[0], direction };
   });
-  const rows = table.rows.slice(1).map(row => ({ ...row, keys: columns.map(column => (row.cells[column] || '').trim().toLowerCase()) }));
+  const rows = table.rows.slice(1).map(row => ({ ...row, keys: columns.map(column => (row.cells[column.index] || '').trim().toLowerCase()) }));
   rows.sort((a, b) => {
     for (let i = 0; i < columns.length; i++) {
-      if (a.keys[i] < b.keys[i]) return -1;
-      if (a.keys[i] > b.keys[i]) return 1;
+      if (a.keys[i] < b.keys[i]) return -columns[i].direction;
+      if (a.keys[i] > b.keys[i]) return columns[i].direction;
     }
     return 0;
   });

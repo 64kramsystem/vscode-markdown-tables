@@ -66,9 +66,25 @@ test('sort uses prefix precedence, case-insensitive lexical order and stable tie
 
 test('sort rejects ambiguous, unknown, and empty prefixes', () => {
   const table = tablesIn(source)[0];
-  assert.throws(() => sortTable(source, table, 'col'), /More than one/);
-  assert.throws(() => sortTable(source, table, 'missing'), /No column/);
-  for (const input of ['', 'name,', ' , team']) assert.throws(() => sortTable(source, table, input), /nonempty/);
+  for (const input of ['col', 'col-']) assert.throws(() => sortTable(source, table, input), /More than one/);
+  for (const input of ['missing', 'missing-']) assert.throws(() => sortTable(source, table, input), /No column/);
+  for (const input of ['', 'name,', ' , team', '-', 'name, -']) assert.throws(() => sortTable(source, table, input), /nonempty/);
+});
+
+test('descending keys preserve stable ties and support mixed directions and line endings', () => {
+  for (const [prefixes, expected] of [
+    [' NA- ', 'reverse-sorted.md'],
+    [' TE , nA- ', 'reverse-sorted.md'],
+    [' TE- , nA ', 'mixed-sorted.md']
+  ]) {
+    for (const eol of ['\n', '\r\n']) {
+      for (const finalNewline of [true, false]) {
+        const format = text => (finalNewline ? text : text.trimEnd()).replaceAll('\n', eol);
+        const input = format(source);
+        assert.equal(sortTable(input, tablesIn(input)[0], prefixes), format(fixture(expected)));
+      }
+    }
+  }
 });
 
 test('color validation allows only CSS names and hex colors', () => {
@@ -101,6 +117,8 @@ test('sorting preserves CRLF separators and presence or absence of a final newli
 test('exact headers take precedence over longer headers sharing a prefix', () => {
   const input = fixture('exact-headers.md');
   assert.equal(sortTable(input, tablesIn(input)[0], ' NAME , Id '), fixture('exact-headers-sorted.md'));
+  const ascending = fixture('exact-headers-sorted.md');
+  assert.equal(sortTable(ascending, tablesIn(ascending)[0], ' NAME- , Id- '), input);
   assert.throws(() => sortTable(input, tablesIn(input)[0], 'na'), /More than one/);
 });
 

@@ -68,7 +68,7 @@ function activate(context) {
       const table = tableAt(source, editor.selection.active.line);
       if (!table) return;
       const input = await vscode.window.showInputBox({
-        prompt: 'Column header prefixes, in sort order (comma-separated)',
+        prompt: 'Column header prefixes, in sort order (comma-separated; append - for descending)',
         placeHolder: table.headers.join(', '),
         validateInput: value => {
           try { sortTable(source, table, value); } catch (error) { return error.message; }
